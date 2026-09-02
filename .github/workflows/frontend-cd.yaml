@@ -56,6 +56,7 @@ jobs:
   build:
     name: Build and Push Frontend
     runs-on: ubuntu-latest
+
     needs:
       - lint
       - test
@@ -69,6 +70,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
@@ -81,10 +83,11 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.FRONTEND_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
+          REACT_APP_MOVIE_API_URL: ${{ secrets.REACT_APP_MOVIE_API_URL }}
         run: |
           docker build \
-            --build-arg REACT_APP_MOVIE_API_URL=${{ secrets.REACT_APP_MOVIE_API_URL }} \
-            --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            --build-arg REACT_APP_MOVIE_API_URL="$REACT_APP_MOVIE_API_URL" \
+            --tag "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" \
             .
 
       - name: Push Docker image to ECR
@@ -93,10 +96,9 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.FRONTEND_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
-      - name: Update Kubernetes deployment
-        working-directory: starter/frontend
+      - name: Deploy Frontend to EKS
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -104,11 +106,25 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
         run: |
+          echo "Connecting to EKS cluster..."
+
           aws eks update-kubeconfig \
-            --region $AWS_REGION \
-            --name $EKS_CLUSTER_NAME
+            --region "$AWS_REGION" \
+            --name "$EKS_CLUSTER_NAME"
+
+          echo "Applying Kubernetes manifests..."
+
+          kubectl apply \
+            -f starter/frontend/k8s/deployment.yaml \
+            -f starter/frontend/k8s/service.yaml
+
+          echo "Updating frontend image..."
 
           kubectl set image deployment/frontend \
-            frontend=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            frontend="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
-          kubectl rollout status deployment/frontend
+          echo "Waiting for frontend deployment..."
+
+          kubectl rollout status deployment/frontend --timeout=5m
+
+          echo "Frontend deployment completed successfully!"
