@@ -4,6 +4,9 @@ metadata:
   name: backend
   labels:
     app: backend
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+    service.beta.kubernetes.io/aws-load-balancer-subnets: subnet-07a76de974ed424a7,subnet-0ea3e3b21c271d094,subnet-00655b4761b66f91a,subnet-0b6dc9ce6df69c199,subnet-0d710c24e136583bb,subnet-0f7244e6bc101220c
 spec:
   type: LoadBalancer
   selector:
