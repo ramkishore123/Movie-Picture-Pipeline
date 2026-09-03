@@ -1,0 +1,36 @@
+Movie Picture Pipeline - Udacity Resubmission Links
+
+Repository:
+https://github.com/ramkishore123/Movie-Picture-Pipeline
+
+Frontend LoadBalancer URL:
+http://k8s-default-frontend-fd013ac718-3a3773d22fa33a97.elb.us-east-1.amazonaws.com
+
+
+Backend API URL:
+http://k8s-default-backend-25d29f03d7-d2e2a67440f952cd.elb.us-east-1.amazonaws.com/movies
+
+
+REACT_APP_MOVIE_API_URL:
+http://k8s-default-frontend-fd013ac718-3a3773d22fa33a97.elb.us-east-1.amazonaws.com
+
+
+GitHub Actions Workflows:
+
+Frontend Continuous Integration:
+https://github.com/ramkishore123/Movie-Picture-Pipeline/actions/workflows/frontend-ci.yaml
+
+Backend Continuous Integration:
+https://github.com/ramkishore123/Movie-Picture-Pipeline/actions/workflows/backend-ci.yaml
+
+Frontend Continuous Deployment:
+https://github.com/ramkishore123/Movie-Picture-Pipeline/actions/workflows/frontend-cd.yaml
+
+Backend Continuous Deployment:
+https://github.com/ramkishore123/Movie-Picture-Pipeline/actions/workflows/backend-cd.yaml
+
+Latest successful Frontend CI run:
+https://github.com/ramkishore123/Movie-Picture-Pipeline/actions/runs/33717193567
+
+Note:
+AWS credentials/secrets are not included.
